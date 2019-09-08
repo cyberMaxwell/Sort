@@ -1,7 +1,6 @@
 package main;
 import java.io.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 
 public class SortMain {
 
@@ -14,7 +13,8 @@ public class SortMain {
         else if (args[0].equals("/?")) {
             System.out.println("Использование: Sort.exe ВходнойФайл [ВыходнойФайл] [/<сортировка>] [/<тип сортировки>]\n");
             System.out.println("<сортировка>\n  ascending - по умолчанию\n  descending\n");
-            System.out.println("<тип сортировки>\n  tree - по умолчанию\n  selection\n");
+            System.out.println("<тип сортировки>\n  comb - по умолчанию\n  selection\n");
+            //Обработка ошибок пользователя
         } else if (args[0].startsWith("/")) {
             System.out.println("Вы не указали входной файл");
         } else if (count == 4 && (!args[2].startsWith("/") || !args[3].startsWith("/"))) {
@@ -25,87 +25,69 @@ public class SortMain {
             System.out.println("Слишком много аргументов\n\nИспользование: Sort.exe /?");
         } else {
             String inputFileName, outputFileName, methodOfSort, typeOfSort;
-
-            Pattern pattern = Pattern.compile("[:\\+\\?]+");
-            Matcher matcher = pattern.matcher(args[1]);
-
             inputFileName = args[0];
+            //Получение имени выходного файла
             if (count >= 2 && !args[1].contains("/")) {
-                if (matcher.find()) {
+                //Проверка имени выходного файла на допустимость
+                try {
+                    FileWriter fileWriter = new FileWriter(args[1]);
+                    fileWriter.flush();
+                    fileWriter.close();
+                } catch (IOException e) {
                     System.out.println("Недопустимый символ в имени выходного файла");
                     System.exit(0);
                 }
                 outputFileName = args[1];
             } else {
-                outputFileName = inputFileName + ".sort";
+                outputFileName = inputFileName.replace(".txt", ".sort");
             }
-            System.out.println(args[1]);
+            //Значения по умолчанию
+            methodOfSort = "ascending";
+            typeOfSort = "comb";
 
-                methodOfSort = "ascending";
-                typeOfSort = "tree";
-
-                for (int i = 1; i < count; i++) {
-                    if (args[i].equals("/ascending")) {
-                        methodOfSort = "ascending";
-                        //outputFileName = inputFileName + ".sort";
-                    } else if (args[i].equals("/descending")) {
-                        methodOfSort = "descending";
-                        //outputFileName = inputFileName + ".sort";
-                    } else if (args[i].equals("/tree")) {
-                        typeOfSort = "tree";
-                        //outputFileName = inputFileName + ".sort";
-                        //methodOfSort = "ascending";
-                    } else if (args[i].equals("/selection")) {
-                        typeOfSort = "selection";
-                        //outputFileName = inputFileName + ".sort";
-                        //methodOfSort = "ascending";
-                    } else if (args[i].startsWith("/")) {
-                        System.out.println("Выходной файл не может начинаться со знака /\n\nИспользование: Sort.exe /?");
-                        System.exit(0);
-                    }// else outputFileName = args[i];
+            for (int i = 1; i < count; i++) {
+                if (args[i].equals("/ascending")) {
+                    methodOfSort = "ascending";
+                } else if (args[i].equals("/descending")) {
+                    methodOfSort = "descending";
+                } else if (args[i].equals("/comb")) {
+                    typeOfSort = "comb";
+                } else if (args[i].equals("/selection")) {
+                    typeOfSort = "selection";
+                } else if (args[i].startsWith("/")) {
+                    System.out.println("Выходной файл не может начинаться со знака /\n\nИспользование: Sort.exe /?");
+                    System.exit(0);
                 }
-
-                System.out.println(inputFileName);
-                System.out.println(outputFileName);
-                System.out.println(methodOfSort);
-                System.out.println(typeOfSort);
-                Sorting(inputFileName, outputFileName, methodOfSort, typeOfSort);
-
             }
+            Sorting(inputFileName, outputFileName, methodOfSort, typeOfSort);
+
         }
+    }
 
     public static void Sorting(String inputFileName, String outputFileName, String methodOfSort, String typeOfSort) {
         try {
-
             File file = new File(inputFileName);
+            //Класс FileReader позволяет считывать данные из файла
             FileReader fileReader = new FileReader(inputFileName);
-            FileWriter fileWriter = new FileWriter(outputFileName);
+            //file.length() возвращает длину файла(количество символов, входящих в него)
+            int lengthOfFile = (int) file.length();
+            int arr[] = new int[lengthOfFile];
 
-            int lastElement = (int)file.length();
-            int array[] = new int[lastElement];
-
-            for(int i = 0; i <= lastElement - 1; i++) {
-                array[i] = fileReader.read();
+            for (int i = 0; i <= lengthOfFile - 1; i++) {
+                arr[i] = fileReader.read();
             }
-            SelectionSort(array);
+            fileReader.close();
 
+            if (typeOfSort == "selection")
+                SelectionSort(arr);
+            else
+                CombSort(arr);
+            //Создание строки и помещение в неё отсортированного массива элементов
             String newString = "";
-            for(int a : array){
-                newString += String.valueOf((char)a);
+            for (int a : arr) {
+                newString += String.valueOf((char) a);
             }
-
-            if(methodOfSort == "ascending") {
-                fileWriter.write(newString);
-                fileWriter.flush();
-                fileWriter.close();
-            }else if(methodOfSort == "descending"){
-                StringBuffer stringBuffer = new StringBuffer(newString);
-                stringBuffer.reverse();
-                fileWriter.write(stringBuffer.toString());
-                fileWriter.flush();
-                fileWriter.close();
-            }
-
+            AscOrDesc(methodOfSort, outputFileName, newString);
         } catch (IOException e) {
             System.out.println("Файл не найден");
         }
@@ -122,6 +104,46 @@ public class SortMain {
             int tmp = arr[min];
             arr[min] = arr[least];
             arr[least] = tmp;
+        }
+    }
+
+
+    public static void CombSort(int arr[]) {
+        int gap = arr.length;
+        float reductionFactor = 1.247f;
+        boolean swapped = false;
+
+        while (gap > 1 || swapped) {
+            if (gap > 1) {
+                gap = (int) (gap / reductionFactor);
+            }
+            swapped = false;
+
+            for (int i = 0; gap + i < arr.length; i++) {
+                if (arr[i] > arr[i + gap]) {
+                    Integer temp = arr[i];
+                    arr[i] = arr[i + gap];
+                    arr[i + gap] = temp;
+                    swapped = true;
+                }
+            }
+        }
+    }
+
+    //Метод, позволяющий выбрать метод сортировки
+    public static void AscOrDesc(String methodOfSort, String outputFileName, String newString) throws IOException {
+        FileWriter fileWriter = new FileWriter(outputFileName);
+        if (methodOfSort == "ascending") {
+            fileWriter.write(newString);
+            fileWriter.flush();
+            fileWriter.close();
+        } else if (methodOfSort == "descending") {
+            //В классе StringBuffer присутствует метод reverse(), переворачивающий строку
+            StringBuffer stringBuffer = new StringBuffer(newString);
+            stringBuffer.reverse();
+            fileWriter.write(stringBuffer.toString());
+            fileWriter.flush();
+            fileWriter.close();
         }
     }
 }
