@@ -1,10 +1,9 @@
 package main;
 import java.io.*;
 
-
 public class SortMain {
 
-    public static void main(String[] args) {
+    public static void main(String[] args)throws Exception {
         System.out.println("Sort 2019 Maksim Efanov 8311: 2019-09-06\n");
         int count = args.length;
 
@@ -29,18 +28,22 @@ public class SortMain {
             //Получение имени выходного файла
             if (count >= 2 && !args[1].contains("/")) {
                 //Проверка имени выходного файла на допустимость
-                try {
-                    FileWriter fileWriter = new FileWriter(args[1]);
-                    fileWriter.flush();
-                    fileWriter.close();
-                } catch (IOException e) {
-                    System.out.println("Недопустимый символ в имени выходного файла");
-                    System.exit(0);
-                }
+                    try {
+                        Choice(args[1]);
+                        FileWriter fileWriter = new FileWriter(args[1]);
+                        fileWriter.flush();
+                        fileWriter.close();
+                    } catch (IOException e) {
+                        System.out.println("Недопустимый символ в имени выходного файла");
+                        System.exit(0);
+                    }
                 outputFileName = args[1];
             } else {
                 outputFileName = inputFileName.replace(".txt", ".sort");
+                Choice(outputFileName);
             }
+
+
             //Значения по умолчанию
             methodOfSort = "ascending";
             typeOfSort = "comb";
@@ -55,7 +58,7 @@ public class SortMain {
                 } else if (args[i].equals("/selection")) {
                     typeOfSort = "selection";
                 } else if (args[i].startsWith("/")) {
-                    System.out.println("Выходной файл не может начинаться со знака /\n\nИспользование: Sort.exe /?");
+                    System.out.println("Неверные параметры\n\nИспользование: Sort.exe /?");
                     System.exit(0);
                 }
             }
@@ -65,6 +68,7 @@ public class SortMain {
     }
 
     public static void Sorting(String inputFileName, String outputFileName, String methodOfSort, String typeOfSort) {
+            //File fileOut = new File(outputFileName);
         try {
             File file = new File(inputFileName);
             //Класс FileReader позволяет считывать данные из файла
@@ -83,11 +87,12 @@ public class SortMain {
             else
                 CombSort(arr);
             //Создание строки и помещение в неё отсортированного массива элементов
-            String newString = "";
+            String sortMasString = "";
             for (int a : arr) {
-                newString += String.valueOf((char) a);
+                sortMasString += String.valueOf((char) a);
             }
-            AscOrDesc(methodOfSort, outputFileName, newString);
+            AscOrDesc(methodOfSort, outputFileName, sortMasString);
+                System.out.println("Выходной файл " + outputFileName);
         } catch (IOException e) {
             System.out.println("Файл не найден");
         }
@@ -131,19 +136,38 @@ public class SortMain {
     }
 
     //Метод, позволяющий выбрать метод сортировки
-    public static void AscOrDesc(String methodOfSort, String outputFileName, String newString) throws IOException {
+    public static void AscOrDesc(String methodOfSort, String outputFileName, String sortMasString) throws IOException {
         FileWriter fileWriter = new FileWriter(outputFileName);
         if (methodOfSort == "ascending") {
-            fileWriter.write(newString);
+            fileWriter.write(sortMasString);
             fileWriter.flush();
             fileWriter.close();
         } else if (methodOfSort == "descending") {
             //В классе StringBuffer присутствует метод reverse(), переворачивающий строку
-            StringBuffer stringBuffer = new StringBuffer(newString);
+            StringBuffer stringBuffer = new StringBuffer(sortMasString);
             stringBuffer.reverse();
             fileWriter.write(stringBuffer.toString());
             fileWriter.flush();
             fileWriter.close();
         }
     }
-}
+
+    public static void Choice(String outputFileName) throws IOException {
+        File file = new File(outputFileName);
+
+        if (file.exists() && !file.isDirectory()) {
+            System.out.println("Перезаписать файл? y/n");
+            char choice = (char) System.in.read();
+            if (choice == 'y' || choice == 'Y');
+
+            else {
+                System.out.println("Выходной файл не был изменён");
+                System.exit(0);
+            }
+
+            }
+        }
+    }
+
+
+
