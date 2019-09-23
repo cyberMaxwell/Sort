@@ -63,7 +63,6 @@ public class SortMain {
                 }
             }
             Sorting(inputFileName, outputFileName, methodOfSort, typeOfSort);
-
         }
     }
 
@@ -91,10 +90,15 @@ public class SortMain {
             for (int a : arr) {
                 sortMasString += String.valueOf((char) a);
             }
+            //System.out.println("Выходной файл " + outputFileName);
             AscOrDesc(methodOfSort, outputFileName, sortMasString);
-                System.out.println("Выходной файл " + outputFileName);
+
         } catch (IOException e) {
             System.out.println("Файл не найден");
+        }catch (OutOfMemoryError e){
+            System.out.println("Недостаточно памяти");
+        }catch (SecurityException e){
+            System.out.println("Файл защищён");
         }
     }
 
@@ -156,6 +160,7 @@ public class SortMain {
         File file = new File(outputFileName);
 
         if (file.exists() && !file.isDirectory()) {
+            System.out.println("Выходной файл " + outputFileName);
             System.out.println("Перезаписать файл? y/n");
             char choice = (char) System.in.read();
             if (choice == 'y' || choice == 'Y');
