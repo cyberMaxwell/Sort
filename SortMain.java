@@ -28,15 +28,15 @@ public class SortMain {
             //Получение имени выходного файла
             if (count >= 2 && !args[1].contains("/")) {
                 //Проверка имени выходного файла на допустимость
-                    try {
-                        Choice(args[1]);
-                        FileWriter fileWriter = new FileWriter(args[1]);
-                        fileWriter.flush();
-                        fileWriter.close();
-                    } catch (IOException e) {
-                        System.out.println("Недопустимый символ в имени выходного файла");
-                        System.exit(0);
-                    }
+                try {
+                    Choice(args[1]);
+                    FileWriter fileWriter = new FileWriter(args[1]);
+                    fileWriter.flush();
+                    fileWriter.close();
+                } catch (IOException e) {
+                    System.out.println("Недопустимый символ в имени выходного файла");
+                    System.exit(0);
+                }
                 outputFileName = args[1];
             } else {
                 outputFileName = inputFileName.replace(".txt", ".sort");
@@ -66,33 +66,33 @@ public class SortMain {
         }
     }
 
-    public static void Sorting(String inputFileName, String outputFileName, String methodOfSort, String typeOfSort) {
-            //File fileOut = new File(outputFileName);
+    private static void Sorting(String inputFileName, String outputFileName, String methodOfSort, String typeOfSort) {
+        //File fileOut = new File(outputFileName);
         try {
             File file = new File(inputFileName);
             //Класс FileReader позволяет считывать данные из файла
             FileReader fileReader = new FileReader(inputFileName);
             //file.length() возвращает длину файла(количество символов, входящих в него)
             int lengthOfFile = (int) file.length();
-            int arr[] = new int[lengthOfFile];
+            int[] arr = new int[lengthOfFile];
 
             for (int i = 0; i <= lengthOfFile - 1; i++) {
                 arr[i] = fileReader.read();
             }
             fileReader.close();
 
-            if (typeOfSort == "selection")
+            if (typeOfSort.equals("selection"))
                 SelectionSort(arr);
             else
                 CombSort(arr);
             //Создание строки и помещение в неё отсортированного массива элементов
-            String sortMasString = "";
+            StringBuilder sortMasString = new StringBuilder();
             for (int a : arr) {
-                sortMasString += String.valueOf((char) a);
+                sortMasString.append((char) a);
             }
-            //System.out.println("Выходной файл " + outputFileName);
-            AscOrDesc(methodOfSort, outputFileName, sortMasString);
 
+            AscOrDesc(methodOfSort, outputFileName, sortMasString.toString());
+            System.out.println("Выходной файл " + outputFileName);
         } catch (IOException e) {
             System.out.println("Файл не найден");
         }catch (OutOfMemoryError e){
@@ -102,7 +102,7 @@ public class SortMain {
         }
     }
 
-    public static void SelectionSort(int arr[]) {
+    private static void SelectionSort(int[] arr) {
         for (int min = 0; min < arr.length - 1; min++) {
             int least = min;
             for (int j = min + 1; j < arr.length; j++) {
@@ -117,7 +117,7 @@ public class SortMain {
     }
 
 
-    public static void CombSort(int arr[]) {
+    private static void CombSort(int[] arr) {
         int gap = arr.length;
         float reductionFactor = 1.247f;
         boolean swapped = false;
@@ -140,15 +140,15 @@ public class SortMain {
     }
 
     //Метод, позволяющий выбрать метод сортировки
-    public static void AscOrDesc(String methodOfSort, String outputFileName, String sortMasString) throws IOException {
+    private static void AscOrDesc(String methodOfSort, String outputFileName, String sortMasString) throws IOException {
         FileWriter fileWriter = new FileWriter(outputFileName);
-        if (methodOfSort == "ascending") {
+        if (methodOfSort.equals("ascending")) {
             fileWriter.write(sortMasString);
             fileWriter.flush();
             fileWriter.close();
-        } else if (methodOfSort == "descending") {
+        } else if (methodOfSort.equals("descending")) {
             //В классе StringBuffer присутствует метод reverse(), переворачивающий строку
-            StringBuffer stringBuffer = new StringBuffer(sortMasString);
+            StringBuilder stringBuffer = new StringBuilder(sortMasString);
             stringBuffer.reverse();
             fileWriter.write(stringBuffer.toString());
             fileWriter.flush();
@@ -156,23 +156,22 @@ public class SortMain {
         }
     }
 
-    public static void Choice(String outputFileName) throws IOException {
+    private static void Choice(String outputFileName) throws IOException {
         File file = new File(outputFileName);
 
         if (file.exists() && !file.isDirectory()) {
             System.out.println("Выходной файл " + outputFileName);
             System.out.println("Перезаписать файл? y/n");
             char choice = (char) System.in.read();
-            if (choice == 'y' || choice == 'Y');
-
+            if (choice == 'y' || choice == 'Y') ;
             else {
                 System.out.println("Выходной файл не был изменён");
                 System.exit(0);
             }
 
-            }
         }
     }
+}
 
 
 
